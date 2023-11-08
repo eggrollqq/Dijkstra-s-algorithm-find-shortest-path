@@ -13,7 +13,7 @@ void DecreaseKey(HEAP *h, int i, double newKey);
 void Insertion(HEAP *h, ELEMENT *x);
 bool IsMinHeap(HEAP *heap);
 void freeHeap(HEAP* h);
-HEAP *InitializeHeap(int capacity);
+
 
 
 #endif
