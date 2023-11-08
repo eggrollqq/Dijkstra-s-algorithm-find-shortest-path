@@ -56,9 +56,15 @@ int main(int argc, char **argv){
 V = (pVERTEX*) malloc((n + 1) * sizeof(pVERTEX));
 ADJ = (pNODE*) malloc((n + 1) * sizeof(pNODE));
 
+if (V == NULL) {
+    fprintf(stderr, "Error: Memory allocation failed for V\n");
+    // Handle the error or exit
+}
+
     // Initialize all pointers in V and ADJ to NULL
     for (int i = 1; i <= n; i++) {
         V[i] = (pVERTEX) malloc(sizeof(VERTEX));
+        V[i]->position = i;
         ADJ[i] = NULL;
     }
 
@@ -70,6 +76,11 @@ ADJ = (pNODE*) malloc((n + 1) * sizeof(pNODE));
         double w;
 
         fscanf(fp, "%d %d %d %lf", &edgeIndex, &u, &v, &w);
+
+    if (u < 1 || u > n || v < 1 || v > n) {
+        fprintf(stderr, "Error: Edge with invalid vertices\n");
+        // Handle error or exit
+    }
 
          insertIntoAdjacencyList(ADJ, u, v, w, edgeIndex, flag);
     
@@ -102,7 +113,7 @@ ADJ = (pNODE*) malloc((n + 1) * sizeof(pNODE));
         if(strcmp(Word, "SinglePair") == 0){
             int src, dest;
             fscanf(stdin, "%d %d", &src, &dest); // Read source and destination
-            dijkstra(V, ADJ, n, src); // Apply Dijkstra's algorithm
+            dijkstra(V, ADJ, n, src, dest); // Apply Dijkstra's algorithm
             lastSrc = src;
             lastDest = dest;
             continue;
