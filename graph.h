@@ -1,12 +1,12 @@
+
 #ifndef _graph_H
 #define _graph_H 1
 #include "data_structures.h"
 
 
-void insertIntoAdjacencyList(pNODE* ADJ, int u, int v, double w, int edgeIndex, int flag);
-void PrintADJ(pNODE* ADJ, int n);
-void printPath(pVERTEX *V, int source, int destination);
-HEAP *InitializeHeap(int capacity);
-void dijkstra(pVERTEX *V, pNODE *ADJ, int n, int source, int target);
+void insertIntoAdjacencyList(NODE **ADJ, int u, int v, double w, int edgeIndex, int flag);
+void PrintADJ(NODE **ADJ, int n);
+void printPath(VERTEX **V, int n, int source, int destination);
+void dijkstra(VERTEX **V, NODE **ADJ, int n, int source, int target, STACK *pathStack);
 
 #endif
