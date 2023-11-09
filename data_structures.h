@@ -1,60 +1,37 @@
-#ifndef data_structure_H
-#define data_structure_H
+#ifndef DATA_STRUCTURE_H
+#define DATA_STRUCTURE_H
 
-typedef enum {
-    white,
-    black,
-    grey,  
-} COLOR;
+typedef struct NODE {
+    int index, u, v, pi;
+    double w;
+    struct NODE *next;
+} NODE;
 
-typedef struct TAG_VERTEX{
-int index;
-COLOR color;
-double d;
-int pi;
-int position;
-}VERTEX;
+typedef struct {
+    int index;
+    double d;
+    int pi;
+    int position;
+    NODE *ADJ;
+} VERTEX;
 
-typedef VERTEX *pVERTEX;
+typedef struct {
+    int capacity, size;
+    VERTEX **H;
+} HEAP;
 
-
-typedef struct TAG_NODE{
-int index;
-int u;
-int v;
-double w;
-TAG_NODE *next;
-}NODE;
-
-typedef NODE *pNODE;
-
-typedef VERTEX ELEMENT;
-typedef ELEMENT *pELEMENT;
-
-
-
-
-typedef struct TAG_HEAP{
-int capacity;
-int size;
-pELEMENT *H;
-}HEAP;
-
-typedef HEAP *pHEAP;
-
-
-typedef struct TAG_LISTSTACK {
-    pVERTEX vertex;              // pointer to the vertex information
-    struct TAG_LISTSTACK* next;  // pointer to the next node in the stack
+// Stack node structure
+typedef struct LISTSTACK {
+    VERTEX *vertex;
+    struct LISTSTACK *next;
 } LISTSTACK;
 
-typedef LISTSTACK* pLISTSTACK;
-
-typedef struct TAG_STACK {
-    pLISTSTACK top;            // pointer to the top node in the stack
-    int size;                  // current size of the stack
+// Stack structure
+typedef struct {
+    LISTSTACK *top;
+    int size;
 } STACK;
 
-typedef STACK* pSTACK;
+typedef VERTEX ELEMENT;
 
 #endif
