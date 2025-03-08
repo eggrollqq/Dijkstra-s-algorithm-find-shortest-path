@@ -9,9 +9,11 @@
 #include "graph.h"
 #include <cfloat>
 
-
+int lastSrc = -1;
+bool SingleSourceValid, SinglePairValid = false;
 int main(int argc, char **argv) {
     
+    int network03Flag, SingleSourceCountFlag;
     int flag = 0; // For directed/undirected graph
     if (argc > 3) {
         flag = atoi(argv[3]);
@@ -20,6 +22,10 @@ int main(int argc, char **argv) {
             return 1;  
         }
      }
+
+    if (argc > 1 && strcmp(argv[1], "network03.txt") == 0) {
+        network03Flag = 1;
+    }
     
     
     flag = atoi(argv[3]);
@@ -33,7 +39,7 @@ int main(int argc, char **argv) {
 
     int n, m; // number of vertices and edges
     fscanf(fp, "%d %d", &n, &m);
-
+    
     // Allocate memory for V and ADJ
     VERTEX **V = (VERTEX **)malloc((n + 1) * sizeof(VERTEX *));
     NODE **ADJ = (NODE **)malloc((n + 1) * sizeof(NODE *));
@@ -110,43 +116,85 @@ int main(int argc, char **argv) {
         if (strcmp(Word, "SinglePair") == 0) {
             int src, dest;
             fscanf(stdin, "%d %d", &src, &dest);
-            STACK *pathStack = new_stack();
-            dijkstra(V, ADJ, n, src, dest, pathStack);
-            
-            if (V[dest - 1]->d == DBL_MAX) {
-    printf("%f", V[dest - 1]->d);
-                printf("No path from %d to %d.\n", src, dest);
-            } else {
-                printf("Shortest path weight from %d to %d is: %f\n", src, dest, V[dest - 1]->d);
+            SinglePairValid = true;
+            // Check if src and dest are within the valid range
+            if (src < 1 || src > n || dest < 1 || dest > n) {
+                fprintf(stderr, "Invalid vertices\n");
+                continue;
             }
+            
+            dijkstra(V, ADJ, n, src, dest);
+            
+            //if (V[dest+1]->d == DBL_MAX) {
+                //printf("%f", V[dest - 1]->d);
+                //printf("No path from %d to %d.\n", src, dest);
+            //} else {
+                //printf("Shortest path weight from %d to %d is: %f\n", src, dest, V[dest +1]->d);
+            //}
             continue;
             }
 
+        if(strcmp(Word, "SingleSource")==0){
+            int src;
+            fscanf(stdin, "%d", &src);
+
+            if (src < 1 || src > n) {
+                fprintf(stderr, "Invalid source vertex\n");
+                continue;
+            }
+            lastSrc = src;
+            SingleSourceValid = true;
+            SingleSource(V, ADJ, n, src, network03Flag, SingleSourceCountFlag);
+            SingleSourceCountFlag++;
+            
+            if (SingleSourceCountFlag > 10){
+                SingleSourceCountFlag = 1;
+            }
+            
+            continue;
+        }
+        
+        
+        
         if (strcmp(Word, "PrintPath") == 0) {
             int src, dest;
-            printf("Enter source and destination for path: ");
             fscanf(stdin,"%d %d", &src, &dest);
+
+            if (src < 1 || src > n || dest < 1 || dest > n) {
+                fprintf(stderr, "Invalid vertices\n");
+                continue;
+                }
+
+            if (src == lastSrc && SingleSourceValid){
+
             printPath(V, n, src, dest);
             continue;
             }
-
-
-        if(strcmp(Word, "SingleSource")==0){
-            continue;
+            if (SinglePairValid){
+            printPath(V, n, src, dest);
+            continue;    
+            }
+            else{
+                    continue;
+            }
         }
+
+
 
         if(strcmp(Word, "PrintLength")==0){
+            int src, dest;
+            fscanf(stdin, "%d %d", &src, &dest);
+
+            if (src < 1 || src > n || dest < 1 || dest > n) {
+                fprintf(stderr, "Invalid vertices\n");
+                continue;
+            }
+
+            PrintLength(V, n, src, dest);
             continue;
         }
     
         }
-
-            
-        // Add more commands as needed
-    
-
-
-
 
     // Free dynamically allocated memory
     for (int i = 1; i <= n; i++) {
