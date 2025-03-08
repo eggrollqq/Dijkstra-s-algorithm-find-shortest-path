@@ -30,6 +30,7 @@ bool IsMinHeap(HEAP *heap) {
 
 
 void Heapify(HEAP *h, int i) {
+
     int smallest = i;
     int l = 2 * i;
     int r = 2 * i + 1;
@@ -43,6 +44,8 @@ void Heapify(HEAP *h, int i) {
 
     if (smallest != i) {
         swap(&h->H[i], &h->H[smallest]);
+        h->H[i]->position = i;        // Update position of swapped node
+        h->H[smallest]->position = smallest; // Update position of smallest node
         Heapify(h, smallest);
     }
 }
@@ -68,7 +71,13 @@ VERTEX *ExtractMin(HEAP *h) {
     }
 
     VERTEX *min = h->H[1];
-    h->H[1] = h->H[h->size--];
+    /*h->H[1] = h->H[h->size--];
+    Heapify(h, 1);*/
+
+    
+    h->H[1] = h->H[h->size];
+    h->H[1]->position = 1;  // Update the position of the new root
+    h->size--;
     Heapify(h, 1);
 
     return min;
@@ -83,7 +92,7 @@ void DecreaseKey(HEAP *h, int i, double newKey) {
     h->H[i]->d = newKey;
     while (i > 1 && h->H[i / 2]->d > h->H[i]->d) {
         swap(&h->H[i], &h->H[i / 2]);
-        i /= 2;
+        i = i / 2;
     }
 }
 
