@@ -1,5 +1,3 @@
-
-
 #ifndef _heap_H
 #define _heap_H 1
 #include "data_structures.h"
