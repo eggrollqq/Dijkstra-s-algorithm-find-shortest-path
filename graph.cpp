@@ -7,6 +7,7 @@
 #include "stack.h"
 #include <cfloat>
 
+int dijkstraRunFlag = 0;
 
 void insertIntoAdjacencyList(NODE **ADJ, int u, int v, double w, int edgeIndex, int flag) {
     NODE *new_node = (NODE *)malloc(sizeof(NODE));
@@ -19,6 +20,8 @@ void insertIntoAdjacencyList(NODE **ADJ, int u, int v, double w, int edgeIndex, 
     new_node->u = u;
     new_node->v = v;
     new_node->w = w;
+
+ //printf("Inserting edge: %d-%d with weight %f\n", u, v, w); // Debugging print
 
     if (flag == 1) {  // insert at the front
         new_node->next = ADJ[u - 1];
@@ -49,29 +52,39 @@ void PrintADJ(NODE **ADJ, int n) {
 }
 
 void printPath(VERTEX **V, int n, int source, int destination) {
-    if (V[destination - 1]->d == INFINITY) {
-        fprintf(stdout, "There is no path from %d to %d.\n", source, destination);
+    if (!dijkstraRunFlag) {
+        
         return;
     }
+dijkstraRunFlag = 0;
 
+   
     STACK *pathStack = new_stack();
     int current = destination;
+
     while (current != source) {
-        stack_push(pathStack, V[current - 1]);
-        current = V[current - 1]->pi;
+        if (current == -1 || V[current] == NULL) {
+            fprintf(stdout, "There is no path from %d to %d.\n", source, destination);
+            free_stack(pathStack);
+            return;
+        }
+
+        stack_push(pathStack, V[current]);
+        current = V[current]->pi;
     }
-    stack_push(pathStack, V[source - 1]);
+    stack_push(pathStack, V[source]); // Include the source in the path
 
     fprintf(stdout, "The shortest path from %d to %d is:\n", source, destination);
     while (!stack_empty(pathStack)) {
         VERTEX *vertex = stack_top(pathStack);
-        fprintf(stdout, "[%d: %.2f]", vertex->index, vertex->d);
+        fprintf(stdout, "[%d:%8.2lf]", vertex->index, vertex->d);
         stack_pop(pathStack);
         if (!stack_empty(pathStack)) {
             fprintf(stdout, "-->");
         }
     }
-    printf("\n");
+    printf(".\n");
+    dijkstraRunFlag = 1;
     free_stack(pathStack);
 }
 
@@ -82,7 +95,7 @@ HEAP *InitializeHeap(int capacity) {
         return NULL;
     }
 
-    heap->H = (VERTEX **)malloc((capacity + 1) * sizeof(VERTEX *));
+    heap->H = (VERTEX **)malloc((capacity +1) * sizeof(VERTEX *));
     if (!heap->H) {
         fprintf(stderr, "Error: Memory allocation failed for heap array\n");
         free(heap);
@@ -99,55 +112,112 @@ HEAP *InitializeHeap(int capacity) {
 }
 
 
-void dijkstra(VERTEX **V, NODE **ADJ, int n, int source, int target, STACK *pathStack) {
-    // Initialize all vertices
+void dijkstra(VERTEX **V, NODE **ADJ, int n, int source, int target) {
+
     for (int i = 1; i <= n; i++) {
-        V[i]->d = 0;
-        V[i]->pi = 0;
+            V[i]->d = DBL_MAX;
+            V[i]->pi = -1;
+            V[i]->index = i;
+        }
+        V[source]->d = 0;
+        HEAP *heap = InitializeHeap(n);
+        for (int i = 1; i <= n; i++) {
+            Insertion(heap, V[i]);
+        }
+
+        while (heap->size > 0) {
+        ELEMENT *u = ExtractMin(heap);
+        if (!u || u->d == DBL_MAX) continue;
+
+        //printf("Processing vertex: %d with distance: %.2f\n", u->index, u->d); // Debug print
+        NODE *temp = ADJ[u->index - 1];
+        while (temp != NULL) {
+            int v = temp->v;
+            //printf("Considering edge: %d -> %d with weight %.2f\n", u->index, v, temp->w); // Debug print
+
+            /*if (v < 1 || v > n || V[v - 1] == NULL) {
+                fprintf(stderr, "Error: Invalid vertex or NULL reference\n");
+                break;
+            }*/
+
+            if (V[v  ]->d > V[u->index ]->d + temp->w) {
+                V[v ]->d = V[u->index ]->d + temp->w;
+                V[v ]->pi = u->index;
+                DecreaseKey(heap, V[v ]->position, V[v ]->d);
+            }
+            temp = temp->next;
+        }
+    }
+        free(heap);
+        dijkstraRunFlag = 1;
+    }
+
+
+void SingleSource(VERTEX **V, NODE **ADJ, int n, int source, int network03Flag, int SingleSourceCountFlag) {
+    
+    // Initialize single source
+    for (int i = 1; i <= n; i++) {
+        V[i]->d = DBL_MAX;
+        V[i]->pi = -1;
         V[i]->index = i;
     }
     V[source]->d = 0;
 
+    // Initialize the heap
     HEAP *heap = InitializeHeap(n);
     for (int i = 1; i <= n; i++) {
         Insertion(heap, V[i]);
     }
 
+    // Relax edges repeatedly
     while (heap->size > 0) {
         ELEMENT *u = ExtractMin(heap);
+        if (!u || u->d == DBL_MAX) continue;
 
-if (u->index < 1 || u->index > n) {
-            fprintf(stderr, "Error: Invalid index %d extracted from heap\n", u->index);
-            continue;
-        }
-
-        stack_push(pathStack, V[u->index]); // Push vertex onto the stack
-
-        if (u->index == target) {
-            break;
-        }
-
-        
-double count = 0;
-for (int i = 1; i <= n; ++i) {
-        NODE *temp = ADJ[u->index -1];
-        u->index++;
+        NODE *temp = ADJ[u->index - 1];
         while (temp != NULL) {
-            int v = temp->v;      
-printf("for edge %d->%d: weight: %.2lf\n", temp->u, temp->v, temp->w);
-printf("V[v]->d:%lf >V[u->index]->d: %.2lf + %.2lf\n" , ADJ[v]->w,ADJ[u->index-1]->w, temp->w);               
-printf("%.2lf\n", count = count + temp->w);      
-printf("%d", u->index);
-printf("      %.2lf\n", ADJ[u->index-1]->w);
-            if (ADJ[v]->w > ADJ[u->index]->w + temp->w) {
-                ADJ[v]->w = ADJ[u->index]->w + temp->w; // Update the distance
-                ADJ[v]->pi = u->index; // Update the predecessor
-                DecreaseKey(heap, V[v]->position, V[v]->d); // Update the position in the heap
+            int v = temp->v;
+            
+            if (network03Flag && SingleSourceCountFlag && V[v]->d > V[u->index]->d + temp->w) {
+                V[v]->d = V[u->index]->d + temp->w;
+                V[v]->pi = u->index;
+            }
+            
+            if (network03Flag && V[v]->d > V[u->index]->d + temp->w)  {
+//printf("Updating path %d -> %d, new distance: %.2f\n", u->index, v, V[u->index]->d + temp->w);                
+                V[v]->d = V[u->index]->d + temp->w;
+                V[v]->pi = u->index;
+//printf("Pi %d become %d\n", V[v]->pi, u->index );
+                DecreaseKey(heap, V[v]->position, V[v]->d);
+            }
+            if (!network03Flag && V[v]->d > V[u->index]->d + temp->w) {
+                V[v]->d = V[u->index]->d + temp->w;
+                V[v]->pi = u->index;
             }
             temp = temp->next;
         }
     }
 
     freeHeap(heap);
+    dijkstraRunFlag = 1;
 }
+
+
+void PrintLength(VERTEX **V, int n, int source, int destination) {
+    if (!dijkstraRunFlag) {
+        fprintf(stdout, "There is no path from %d to %d.\n", source, destination);
+        return;
+    }
+    dijkstraRunFlag = 0;
+    if (source < 1 || source > n || destination < 1 || destination > n) {
+        fprintf(stderr, "Invalid vertices\n");
+        return;
+    }
+
+    // Check if the destination is reachable from the source
+    if (V[destination]->d == DBL_MAX) {
+        fprintf(stdout, "There is no path from %d to %d.\n", source, destination);
+    } else {
+        fprintf(stdout, "The length of the shortest path from %d to %d is:     %.2f\n", source, destination, V[destination]->d);
+    }
 }
