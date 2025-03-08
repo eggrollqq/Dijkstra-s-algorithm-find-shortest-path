@@ -24,14 +24,17 @@ int stack_empty(STACK *stack) {
 
 void stack_push(STACK *stack, VERTEX *vertex) {
     LISTSTACK *newNode = (LISTSTACK *)malloc(sizeof(LISTSTACK));
+//printf("Pushing vertex: %d with d: %.2f and pi: %d\n", vertex->index, vertex->d, vertex->pi);
     if (!newNode) {
         fprintf(stderr, "Error: Memory allocation failed for stack node\n");
         exit(EXIT_FAILURE);
     }
+
     newNode->vertex = vertex;
     newNode->next = stack->top;
     stack->top = newNode;
     stack->size++;
+//printf("New stack size: %d\n", stack->size);
 }
 
 VERTEX *stack_top(STACK *stack) {
