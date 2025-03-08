@@ -2,7 +2,7 @@
 #define DATA_STRUCTURE_H
 
 typedef struct NODE {
-    int index, u, v, pi;
+    int index, u, v;
     double w;
     struct NODE *next;
 } NODE;
